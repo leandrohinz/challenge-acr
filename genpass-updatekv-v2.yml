@@ -17,6 +17,7 @@ steps:
       Write-Host "Keyvault is: $(keyVault)"
       $securePassword = ConvertTo-SecureString -String "$(clientSecret)" -AsPlainText -Force
       $psCred = New-Object System.Management.Automation.PSCredential("$(clientID)", $securePassword)
+      Connect-AzAccount -Credential $psCred -Tenant "$(tenantID)" -ServicePrincipal
       
       # Generate a new password
       $newPassword = -join ((33..126) | Get-Random -Count 8 | % {[char]$_})
