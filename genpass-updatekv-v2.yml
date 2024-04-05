@@ -1,0 +1,39 @@
+trigger: none
+
+pool:
+  name: Default
+
+variables:
+- group: Az-Variables-dev
+
+steps:
+
+- task: AzurePowerShell@5
+  inputs:
+    azureSubscription: 'hinz-vega-sc-dev'
+    ScriptType: 'InlineScript'
+    Inline: |
+      #Connect-AzAccount
+      Write-Host "Keyvault is: $(keyVault)"
+      $securePassword = ConvertTo-SecureString -String "$(clientSecret)" -AsPlainText -Force
+      $psCred = New-Object System.Management.Automation.PSCredential("$(clientID)", $securePassword)
+      
+      # Generate a new password
+      $newPassword = -join ((33..126) | Get-Random -Count 8 | % {[char]$_})
+      
+      # Update the secret in the Key Vault
+      az keyvault secret set --name secretPassword --vault-name $(keyVault) --value $newPassword
+      
+      # Get the new password from the Key Vault
+      $password = az keyvault secret show --name secretPassword --vault-name $(keyVault) --query value -o tsv
+      
+      # Get the username from the Key Vault
+      $username = az keyvault secret show --name secretUsername --vault-name $(keyVault) --query value -o tsv
+      
+      # Update the password of the VM
+      az vm user update --resource-group $(keyVault) --name vmLJHH --username $username --password $password
+      
+      # Restart the VM
+      az vm restart --resource-group $(keyVault) --name vmLJHH
+    azurePowerShellVersion: 'LatestVersion'
+

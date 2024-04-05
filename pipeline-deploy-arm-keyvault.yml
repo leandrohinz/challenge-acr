@@ -1,0 +1,23 @@
+trigger: none
+
+pool:
+  name: Default
+
+variables:
+- group: Az-Variables-dev
+
+steps:
+
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: 'hinz-vega-sc-dev'
+    subscriptionId: $(subscriptionID)
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: $(resourceGroup)
+    location: 'East US'
+    templateLocation: 'Linked artifact'
+    csmFile: 'keyvaultdeploy.json'
+    csmParametersFile: 'keyvaultdeploy.parameters.json'
+    deploymentMode: 'Incremental'
+

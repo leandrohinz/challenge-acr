@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/4aeae9ec-76bf-4564-b099-a2c5805aa2a1/resourceGroups/hinz-vega-test-1/providers/Microsoft.KeyVault/vaults/Keyvault-Hinz-Vega1"
+        },
+        "secretName": "secretUsername"
+      }
+    },
+    "adminPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/4aeae9ec-76bf-4564-b099-a2c5805aa2a1/resourceGroups/hinz-vega-test-1/providers/Microsoft.KeyVault/vaults/Keyvault-Hinz-Vega1"
+        },
+        "secretName": "secretPassword"
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+trigger: none
+
+pool:
+  name: Default
+
+variables:
+- group: Az-Variables-dev
+
+steps:
+- task: AzurePowerShell@5
+  inputs:
+    azureSubscription: 'hinz-vega-sc-dev'
+    ScriptType: 'InlineScript'
+    Inline: |
+      #Connect-AzAccount
+      Write-Host "Keyvault is: $(keyVault)"
+      $securePassword = ConvertTo-SecureString -String "$(clientSecret)" -AsPlainText -Force
+      $psCred = New-Object System.Management.Automation.PSCredential("$(clientID)", $securePassword)
+
+      # Resource Group and VM details
+      $resourceGroupName = $(resourceGroup)
+      $vmName = $(vm_name)
+      
+      # Script to run
+      $script = @"
+
+      cd C://
+
+      Write-Host "Configuracion de las variables de ambiente de java y chocolatey"
+      [Environment]::SetEnvironmentVariable("PATH", "$env:PATH;C:\ProgramData\chocolatey\bin", "Machine")
+      [Environment]::SetEnvironmentVariable("PATH", "$env:PATH;C:\ProgramData\chocolatey\bin\choco.exe", "Machine")
+      [Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Java\jdk1.8.0_291", "Machine")
+      [Environment]::SetEnvironmentVariable("PATH", "$env:PATH;C:\Program Files\Java\jdk1.8.0_291\bin", "Machine")
+
+      Write-Host "Imprimir las variables de ambiente y exportarlas a un archivo de texto en el escritorio"
+      Get-ChildItem Env: | Out-File "$env:HOMEDRIVE\environment_variables.txt"
+
+      Write-Host "Instalacion de chocolatey"
+      Set-ExecutionPolicy Bypass -Scope Process -Force
+      [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+      iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+      Start-Process -FilePath "choco" -ArgumentList "upgrade chocolatey" -Wait
+
+      Write-Host "Instalacion de nodejs"
+      Start-Process -FilePath "choco" -ArgumentList "install nodejs --yes" -Wait
+
+      Write-Host "Instalacion de visual studio code"
+      Start-Process -FilePath "choco" -ArgumentList "install vscode --yes" -Wait
+
+      Write-Host "Instalacion de java"
+      Start-Process -FilePath "choco" -ArgumentList "install jdk8 --yes" -Wait
+
+      Write-Host "Instalacion de git"
+      Start-Process -FilePath "choco" -ArgumentList "install git --yes" -Wait
+
+      Write-Host "Instalacion de office"
+      Start-Process -FilePath "choco" -ArgumentList "install microsoft-office-deployment --params='/64bit' --yes" -Wait
+
+      ##Restart-Computer -Force
+      "@
+      
+      # Run the script on the VM
+      Invoke-AzVMRunCommand -ResourceGroupName $resourceGroupName -Name $vmName -CommandId 'RunPowerShellScript' -ScriptString $script
+
+    azurePowerShellVersion: 'LatestVersion'
+

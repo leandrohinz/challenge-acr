@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "keyVaultName": {
+      "value": "Keyvault-Hinz-Vega1"
+    },
+    "secretUsername": {
+      "value": "adminljhh"
+    },
+    "secretPassword": {
+      "value": "P4ssw0rd2024!"
+    },
+    "sp_objectID": {
+      "value": "52b90e38-8d8b-4027-b376-027a9ec91acb"
+    }
+  }
+}

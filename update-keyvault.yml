@@ -1,0 +1,26 @@
+trigger: none
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+- group: Az-Variables-dev
+
+steps:
+- task: AzurePowerShell@5
+  inputs:
+    azureSubscription: 'sc-hinz-vega-dev'
+    ScriptType: 'InlineScript'
+    Inline: |
+      #Connect-AzAccount
+      Write-Host "Client Secret is: $(clientSecret)"
+      Write-Host "Client ID is: $(clientID)"
+      Write-Host "Tenant ID is: $(tenantID)"
+      $securePassword = ConvertTo-SecureString "$(clientSecret)" -AsPlainText -Force
+      $psCred = New-Object System.Management.Automation.PSCredential("$(clientID)", $securePassword)
+      Connect-AzAccount -Credential $psCred -Tenant "$(tenantID)" -ServicePrincipal
+      #az login --service-principal -u $(clientID) -p $(clientSecret) --tenant $(tenantID)
+      Write-Host "Keyvault is: $(keyVault)"
+      Set-AzKeyVaultAccessPolicy -VaultName $(keyVault) -UserPrincipalName felipe.jurado@vegax20hotmail.onmicrosoft.com -PermissionsToSecrets get,set,list,delete
+      Write-Host "Keyvault $(keyVault) updated."
+    azurePowerShellVersion: 'LatestVersion'
